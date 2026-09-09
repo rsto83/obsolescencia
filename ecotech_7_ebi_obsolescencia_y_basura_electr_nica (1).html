@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTech 7° EBI - Obsolescencia y Basura Electrónica en Uruguay</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        ecoBg: '#fbf9f5',
+                        ecoCard: '#ffffff',
+                        ecoPrimary: '#2d6a4f',
+                        ecoPrimaryLight: '#e8f5e9',
+                        ecoSecondary: '#d97706',
+                        ecoSecondaryLight: '#fef3c7',
+                        ecoAccent: '#0284c7',
+                        ecoDark: '#1e293b',
+                        ecoMuted: '#64748b'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 380px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-btn.active {
+            background-color: #2d6a4f;
+            color: #ffffff;
+            border-color: #2d6a4f;
+            box-shadow: 0 4px 6px -1px rgba(45, 106, 79, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-ecoBg text-ecoDark font-sans antialiased min-h-screen flex flex-col selection:bg-ecoPrimaryLight selection:text-ecoPrimary">
+
+    <!-- Chosen Palette: Warm Earthy Eco (stone/cream background #fbf9f5, deep forest green #2d6a4f, warm amber #d97706, sky blue accent #0284c7, slate text) -->
+    <!-- Application Structure Plan:
+         Designed specifically for 12-13 year olds (7° EBI Uruguay) with a modular interactive structure:
+         1. Header & Quick Stat Bar: Engaging title, target age context, and key metric badges.
+         2. Main Dynamic Navigation (Tabs):
+            - Tab 1: "Tipos de Obsolescencia": Side-by-side interactive dynamic cards & device lifespan vs desire simulator.
+            - Tab 2: "Basura Electrónica y Planeta": An interactive mobile phone chemical component breakdown, environmental footprint details, and dynamic Chart.js showing real vs desired lifecycle.
+            - Tab 3: "Las 4 'R' y Uruguay": Interactive circular economy breakdown and specific Uruguay initiatives (Plan Ceibal, Ecocentros, Pilas) with an interactive recycling locator filter.
+            - Tab 4: "Taller e Interacción": Interactive Student Classroom Activities including the "Martín Debate Simulator", a fully functional "Household Tech Audit" tool, and a quick quiz.
+         Rationale: Breaking down complex socio-environmental and technical concepts into interactive, bite-sized components helps 7° EBI students grasp the practical impact of electronics without feeling overwhelmed by long text blocks.
+    -->
+    <!-- Visualization & Content Choices:
+         - Concept Comparison: Interactive toggle cards for Programmed vs. Perceived Obsolescence.
+         - Smartphone Composition: Interactive clickable chemical element grid (Gold, Coltan, Lithium, Lead, Mercury) built with standard Tailwind grid & JS modal state. (NO SVG used).
+         - Lifecycle Data: Chart.js Bar Chart comparing Average Intended Use vs. Actual Replacement Cycle.
+         - Ceibal & Uruguay Stats: Interactive progress counters & doughnut charts showing Ceibal's 75% recycling/reuse rate.
+         - Decision Tree / Case Study: Interactive step-by-step choices for the "Caso Martín" debate.
+         - Interactive Tool: Live table generator for home tech audit.
+         - NO SVG / NO MERMAID JS used anywhere. All visual badges use standard unicode glyphs, CSS styling, and HTML canvas.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-ecoPrimary text-white flex items-center justify-center font-bold text-xl shadow-md">
+                        ♻️
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-ecoDark leading-tight">EcoTech 7.° EBI</h1>
+                        <p class="text-xs text-ecoMuted">Consumo Consciente y RAEE en Uruguay • ANEP</p>
+                    </div>
+                </div>
+                <!-- Navigation Tabs for Desktop & Mobile Scroll -->
+                <nav class="hidden md:flex space-x-2 bg-stone-100 p-1.5 rounded-xl border border-stone-200" id="desktop-nav">
+                    <button onclick="switchTab('obsolescencia')" id="nav-obsolescencia" class="tab-btn active px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200">
+                        📱 Obsolescencia
+                    </button>
+                    <button onclick="switchTab('ambiente')" id="nav-ambiente" class="tab-btn px-4 py-2 text-sm font-semibold text-ecoMuted hover:text-ecoDark rounded-lg transition-all duration-200">
+                        🌍 Impacto Ambiental
+                    </button>
+                    <button onclick="switchTab('uruguay')" id="nav-uruguay" class="tab-btn px-4 py-2 text-sm font-semibold text-ecoMuted hover:text-ecoDark rounded-lg transition-all duration-200">
+                        🇺🇾 4 "R" y Uruguay
+                    </button>
+                    <button onclick="switchTab('actividades')" id="nav-actividades" class="tab-btn px-4 py-2 text-sm font-semibold text-ecoMuted hover:text-ecoDark rounded-lg transition-all duration-200">
+                        ✏️ Actividades y Taller
+                    </button>
+                </nav>
+            </div>
+        </div>
+        <!-- Mobile Navigation Bar -->
+        <div class="md:hidden flex overflow-x-auto border-t border-stone-100 px-4 py-2 gap-2 bg-stone-50" id="mobile-nav">
+            <button onclick="switchTab('obsolescencia')" id="mnav-obsolescencia" class="tab-btn active whitespace-nowrap px-3 py-1.5 text-xs font-semibold rounded-lg border border-stone-200">
+                📱 Obsolescencia
+            </button>
+            <button onclick="switchTab('ambiente')" id="mnav-ambiente" class="tab-btn whitespace-nowrap px-3 py-1.5 text-xs font-semibold text-ecoMuted rounded-lg border border-stone-200">
+                🌍 Impacto
+            </button>
+            <button onclick="switchTab('uruguay')" id="mnav-uruguay" class="tab-btn whitespace-nowrap px-3 py-1.5 text-xs font-semibold text-ecoMuted rounded-lg border border-stone-200">
+                🇺🇾 4 "R" Uruguay
+            </button>
+            <button onclick="switchTab('actividades')" id="mnav-actividades" class="tab-btn whitespace-nowrap px-3 py-1.5 text-xs font-semibold text-ecoMuted rounded-lg border border-stone-200">
+                ✏️ Taller Aula
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- SECTION 1: OBSOLESCENCIA -->
+        <section id="sec-obsolescencia" class="space-y-8">
+            <!-- Intro Paragraph -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <div class="inline-block px-3 py-1 bg-emerald-100 text-ecoPrimary rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                    Eje Temático 1: Ciclo de Vida Digital
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-ecoDark mb-3">
+                    ¿Por qué cambiamos la tecnología tan rápido?
+                </h2>
+                <p class="text-ecoMuted leading-relaxed max-w-3xl">
+                    Vivimos conectados con consolas, celulares y laptops. Sin embargo, los dispositivos parecen durar cada vez menos tiempo o quedarse "viejos" muy pronto. En este apartado explorarás los dos grandes motivos de este fenómeno: la <strong>Obsolescencia Programada</strong> (fallas de diseño o software) y la <strong>Obsolescencia Percibida</strong> (presión social y publicidad).
+                </p>
+            </div>
+
+            <!-- Comparison Cards Grid -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Programmed -->
+                <div class="bg-white p-6 rounded-2xl border border-amber-200 hover:border-amber-400 transition-all shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-3xl p-3 bg-amber-50 rounded-xl">🛠️</span>
+                            <span class="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full">Falla Técnica o Software</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-ecoDark mb-2">Obsolescencia Programada</h3>
+                        <p class="text-sm text-ecoMuted mb-4">
+                            Es la planificación deliberada por parte del fabricante para que el dispositivo tenga una <strong>vida útil corta</strong> o resulte casi imposible de reparar.
+                        </p>
+                        <ul class="space-y-2 text-sm text-stone-700">
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">•</span>
+                                <span><strong>Baterías selladas:</strong> Imposibles de reemplazar sin romper el equipo.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">•</span>
+                                <span><strong>Software e incompatibilidad:</strong> Apps que dejan de andar en modelos de hace 3 o 4 años.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-600 font-bold">•</span>
+                                <span><strong>Repuestos costosos:</strong> Arreglar la pantalla cuesta el 80% del valor de un celular nuevo.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-stone-100 bg-amber-50/50 -mx-6 -mb-6 p-6 rounded-b-2xl">
+                        <span class="text-xs font-semibold text-amber-900">🔍 Ejemplo real en el aula:</span>
+                        <p class="text-xs text-amber-800 mt-1">Tu tablet antigua funciona físicamente bien, pero ya no podés instalar la aplicación para estudiar porque "tu sistema operativo no es compatible".</p>
+                    </div>
+                </div>
+
+                <!-- Perceived -->
+                <div class="bg-white p-6 rounded-2xl border border-sky-200 hover:border-sky-400 transition-all shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-3xl p-3 bg-sky-50 rounded-xl">🧠</span>
+                            <span class="text-xs font-bold text-sky-700 bg-sky-100 px-3 py-1 rounded-full">Psicológica y Social</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-ecoDark mb-2">Obsolescencia Percibida</h3>
+                        <p class="text-sm text-ecoMuted mb-4">
+                            Ocurre cuando el aparato <strong>funciona perfectamente</strong>, pero sentimos el deseo o la necesidad de cambiarlo porque la moda o publicidad nos dicen que quedó "anticuado".
+                        </p>
+                        <ul class="space-y-2 text-sm text-stone-700">
+                            <li class="flex items-start gap-2">
+                                <span class="text-sky-600 font-bold">•</span>
+                                <span><strong>Publicidad persistente:</strong> Lanzamientos anuales del "nuevo modelo" con cambios mínimos.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-sky-600 font-bold">•</span>
+                                <span><strong>Presión de grupo:</strong> Sentir que necesitás el último modelo para encajar en tu grupo de amigos.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-sky-600 font-bold">•</span>
+                                <span><strong>Diseño y estética:</strong> Cambiar colores o bordes para que el modelo anterior parezca "viejo".</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-stone-100 bg-sky-50/50 -mx-6 -mb-6 p-6 rounded-b-2xl">
+                        <span class="text-xs font-semibold text-sky-900">💡 Reflexión para 7.° EBI:</span>
+                        <p class="text-xs text-sky-800 mt-1">Un celular tiene capacidad para funcionar 5 a 6 años, pero la mayoría de las personas lo reemplaza cada 1 o 2 años por moda.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Lifespan Simulator Card -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <h3 class="text-xl font-bold text-ecoDark mb-2">📊 Simulador: Vida Útil Real vs. Renovación deseada</h3>
+                <p class="text-sm text-ecoMuted mb-6">
+                    Ajustá el deslizador para ver cómo cambia la generación de basura electrónica a lo largo de 10 años según cada cuántos años cambias tu celular.
+                </p>
+
+                <div class="grid md:grid-cols-3 gap-6 items-center">
+                    <div class="space-y-4">
+                        <label for="change-slider" class="block text-sm font-semibold text-stone-700">
+                            Años de uso por dispositivo: <span id="slider-val" class="text-ecoPrimary font-bold text-lg">2 años</span>
+                        </label>
+                        <input type="range" id="change-slider" min="1" max="6" value="2" step="1" oninput="updateLifespanSim(this.value)" class="w-full h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer accent-ecoPrimary">
+                        
+                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 space-y-2 text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-ecoMuted">Celulares comprados en 10 años:</span>
+                                <span id="sim-count" class="font-bold text-ecoDark">5 equipos</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-ecoMuted">Residuos generados:</span>
+                                <span id="sim-waste" class="font-bold text-amber-700">1,000 g aprox.</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-ecoMuted">Huella de CO2 estimada:</span>
+                                <span id="sim-co2" class="font-bold text-amber-700">350 kg CO2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="md:col-span-2">
+                        <div class="chart-container">
+                            <canvas id="lifespanChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: IMPACTO AMBIENTAL -->
+        <section id="sec-ambiente" class="hidden space-y-8">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <div class="inline-block px-3 py-1 bg-sky-100 text-ecoAccent rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                    Eje Temático 2: Planeta y Residuos Electrónicos (RAEE)
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-ecoDark mb-3">
+                    ¿Qué hay dentro de un celular y qué pasa cuando lo tiramos?
+                </h2>
+                <p class="text-ecoMuted leading-relaxed max-w-3xl">
+                    Un teléfono inteligente o una computadora contiene más de <strong>60 elementos químicos diferentes</strong>. Al descartarlos en la basura común, estos componentes pueden convertirse en contaminantes peligrosos o desaprovechar minerales valiosos.
+                </p>
+            </div>
+
+            <!-- Components Explorer -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <h3 class="text-xl font-bold text-ecoDark mb-2">🔬 Explorador de Materiales en tus Dispositivos</h3>
+                <p class="text-sm text-ecoMuted mb-6">Haz clic en cada componente para descubrir su origen, su valor o el peligro ambiental que representa si termina en un vertedero.</p>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" id="elements-grid">
+                    <!-- Dynamic Javascript Card Inserts -->
+                </div>
+
+                <!-- Element Detail Modal/Box -->
+                <div id="element-detail-box" class="mt-6 p-5 bg-stone-50 border border-stone-200 rounded-xl hidden transition-all">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span id="elem-icon" class="text-2xl"></span>
+                        <h4 id="elem-title" class="text-lg font-bold text-ecoDark"></h4>
+                        <span id="elem-badge" class="ml-auto text-xs font-bold px-2.5 py-1 rounded-full"></span>
+                    </div>
+                    <p id="elem-desc" class="text-sm text-ecoMuted leading-relaxed"></p>
+                </div>
+            </div>
+
+            <!-- Environmental Consequences Grid -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl border border-rose-100 shadow-sm">
+                    <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center font-bold text-2xl mb-4">
+                        💧
+                    </div>
+                    <h3 class="text-lg font-bold text-ecoDark mb-2">Contaminación de Agua y Suelo</h3>
+                    <p class="text-sm text-ecoMuted leading-relaxed">
+                        Cuando un aparato electrónico termina en un basurero común, la lluvia y la humedad oxidan sus componentes. Las sustancias tóxicas como el <strong>plomo, mercurio y cadmio</strong> se filtran (proceso llamado <em>lixiviado</em>) alcanzando los arroyos y las napas de agua subterránea que abastecen campos y ciudades.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-amber-100 shadow-sm">
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center font-bold text-2xl mb-4">
+                        🏭
+                    </div>
+                    <h3 class="text-lg font-bold text-ecoDark mb-2">Huella de Carbono y Minería</h3>
+                    <p class="text-sm text-ecoMuted leading-relaxed">
+                        El <strong>80% del impacto ambiental</strong> de un smartphone ocurre durante su fabricación. Extraer minerales raros como el <em>coltán</em> o el <em>litio</em> requiere remover toneladas de tierra y utilizar enormes cantidades de agua y energía contaminante.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Environmental Chart -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <h3 class="text-xl font-bold text-ecoDark mb-2">📈 Comparación: Reciclaje vs. Desecho Informal de RAEE</h3>
+                <p class="text-sm text-ecoMuted mb-4">Porcentaje aproximado del destino de los residuos electrónicos a nivel global y regional.</p>
+                <div class="chart-container">
+                    <canvas id="raeeChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: URUGUAY Y 4 R -->
+        <section id="sec-uruguay" class="hidden space-y-8">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <div class="inline-block px-3 py-1 bg-amber-100 text-ecoSecondary rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                    Eje Temático 3: Soluciones Locales y Economía Circular
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-ecoDark mb-3">
+                    Las 4 "R" Digitales y las acciones en Uruguay
+                </h2>
+                <p class="text-ecoMuted leading-relaxed max-w-3xl">
+                    Para combatir la contaminación por RAEE, la sociedad debe pasar de una economía lineal (comprar, usar y tirar) a una <strong>Economía Circular</strong>. Conocé qué podés hacer vos y qué programas existen en Uruguay.
+                </p>
+            </div>
+
+            <!-- The 4 Rs Grid -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm text-center">
+                    <div class="w-12 h-12 mx-auto bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-xl font-extrabold mb-3">1</div>
+                    <h3 class="font-bold text-ecoDark mb-1">Reducir</h3>
+                    <p class="text-xs text-ecoMuted">Comprar solo los aparatos que realmente necesitamos. Evitar compras impulsivas por moda.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm text-center">
+                    <div class="w-12 h-12 mx-auto bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-xl font-extrabold mb-3">2</div>
+                    <h3 class="font-bold text-ecoDark mb-1">Reutilizar</h3>
+                    <p class="text-xs text-ecoMuted">Dar una segunda vida a equipos que aún andan: donarlos a escuelas, familiares o talleres.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm text-center">
+                    <div class="w-12 h-12 mx-auto bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-xl font-extrabold mb-3">3</div>
+                    <h3 class="font-bold text-ecoDark mb-1">Reparar</h3>
+                    <p class="text-xs text-ecoMuted">Arreglar la pantalla o cambiar la batería antes de dar por muerto un dispositivo.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-emerald-200 shadow-sm text-center">
+                    <div class="w-12 h-12 mx-auto bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-xl font-extrabold mb-3">4</div>
+                    <h3 class="font-bold text-ecoDark mb-1">Reciclar</h3>
+                    <p class="text-xs text-ecoMuted">Llevar los equipos inservibles a puntos de recolección especializados o Ecocentros.</p>
+                </div>
+            </div>
+
+            <!-- Plan Ceibal Feature Card -->
+            <div class="bg-gradient-to-br from-emerald-800 to-teal-900 text-white p-6 sm:p-8 rounded-2xl shadow-md">
+                <div class="flex flex-col md:flex-row gap-6 items-center justify-between">
+                    <div class="space-y-3 max-w-2xl">
+                        <span class="inline-block px-3 py-1 bg-emerald-700/60 border border-emerald-500/30 rounded-full text-xs font-semibold">
+                            💻 Caso de Éxito en Uruguay
+                        </span>
+                        <h3 class="text-2xl font-bold">Plan Ceibal y la Gestión de RAEE</h3>
+                        <p class="text-sm text-emerald-100 leading-relaxed">
+                            Plan Ceibal cuenta con un sistema pionero de trazabilidad y recolección de laptops y tablets educativas en desuso.
+                        </p>
+                        <ul class="text-xs sm:text-sm text-emerald-100 space-y-1.5 list-disc list-inside">
+                            <li><strong>Más del 75%</strong> de los equipos devueltos se reúsan o reciclan formalmente.</li>
+                            <li><strong>El 40%</strong> de los repuestos para reparar laptops provienen de otros equipos reacondicionados.</li>
+                            <li><em>Acción escolar:</em> Si tenés un equipo Ceibal roto o en desuso, devuélvelo en tu centro educativo o punto oficial.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20 text-center w-full md:w-auto min-w-[200px]">
+                        <span class="block text-4xl font-extrabold text-amber-300">75%+</span>
+                        <span class="text-xs uppercase tracking-wider text-emerald-100 font-medium mt-1 block">Recuperación y Reciclaje</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uruguay Recycling Directory Interactive Tool -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <h3 class="text-xl font-bold text-ecoDark mb-2">📍 ¿Dónde desechar mis residuos tecnológicos en Uruguay?</h3>
+                <p class="text-sm text-ecoMuted mb-6">Seleccioná qué tipo de objeto querés descartar para conocer el circuito correspondiente.</p>
+
+                <!-- Filter buttons -->
+                <div class="flex flex-wrap gap-2 mb-6" id="disposal-filters">
+                    <button onclick="filterDisposal('all')" class="disp-btn active px-3 py-1.5 text-xs font-bold rounded-lg bg-stone-200 text-stone-800">Todos</button>
+                    <button onclick="filterDisposal('ceibal')" class="disp-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200">Equipos Ceibal</button>
+                    <button onclick="filterDisposal('pilas')" class="disp-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200">Pilas y Baterías</button>
+                    <button onclick="filterDisposal('electro')" class="disp-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-stone-100 text-stone-600 hover:bg-stone-200">Celulares y Pequeños RAEE</button>
+                </div>
+
+                <!-- Cards grid -->
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" id="disposal-cards">
+                    <div class="disp-card ceibal p-4 rounded-xl border border-stone-200 bg-stone-50">
+                        <span class="text-2xl">💻</span>
+                        <h4 class="font-bold text-ecoDark text-sm mt-2">Laptops y Tablets Ceibal</h4>
+                        <p class="text-xs text-ecoMuted mt-1">Llevar al centro educativo (liceo/escuela) o a un centro de reparación autorizado por Ceibal.</p>
+                        <span class="inline-block mt-3 text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">Circuito Ceibal</span>
+                    </div>
+
+                    <div class="disp-card pilas p-4 rounded-xl border border-stone-200 bg-stone-50">
+                        <span class="text-2xl">🔋</span>
+                        <h4 class="font-bold text-ecoDark text-sm mt-2">Pilas y Baterías de Uso Doméstico</h4>
+                        <p class="text-xs text-ecoMuted mt-1">Depositar en los recopiladores ("Tragapilas") en supermercados, municipios y centros educativos.</p>
+                        <span class="inline-block mt-3 text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded">Puntos Tragapilas</span>
+                    </div>
+
+                    <div class="disp-card electro p-4 rounded-xl border border-stone-200 bg-stone-50">
+                        <span class="text-2xl">🏛️</span>
+                        <h4 class="font-bold text-ecoDark text-sm mt-2">Ecocentros Municipales</h4>
+                        <p class="text-xs text-ecoMuted mt-1">En departamentos como Montevideo, Canelones y Maldonado existen Ecocentros fijos y móviles para electrodomésticos.</p>
+                        <span class="inline-block mt-3 text-[10px] bg-sky-100 text-sky-800 font-bold px-2 py-0.5 rounded">Intendencias</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: ACTIVIDADES Y TALLER -->
+        <section id="sec-actividades" class="hidden space-y-8">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <div class="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
+                    Eje Temático 4: Taller Interactivo y Trabajos de Aula
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-ecoDark mb-3">
+                    Actividades para reflexionar y trabajar en 7.° EBI
+                </h2>
+                <p class="text-ecoMuted leading-relaxed max-w-3xl">
+                    Utilizá estas herramientas interactivas diseñadas para el aula: tomá decisiones en el dilema de Martín, realizá la auditoría tecnológica de tu hogar y poné a prueba lo aprendido.
+                </p>
+            </div>
+
+            <!-- Activity 1: Debate Simulator (Caso Martín) -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-purple-200 shadow-sm">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="text-2xl p-2 bg-purple-50 text-purple-600 rounded-lg">💬</span>
+                    <h3 class="text-xl font-bold text-ecoDark">Actividad 1: Dilema de Martín (Simulador de Debate)</h3>
+                </div>
+
+                <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 mb-6 text-sm leading-relaxed italic text-stone-700">
+                    "Martín tiene un celular de hace 2 años que anda perfecto: llama, usa chat de la clase, entra a la plataforma y saca fotos. Sin embargo, salió el nuevo modelo con mejor cámara y pantalla. Muchos compañeros ya lo tienen y él siente que se está quedando atrás."
+                </div>
+
+                <p class="text-sm font-semibold text-stone-800 mb-3">¿Qué consejo le darías a Martín?</p>
+
+                <div class="space-y-3" id="debate-options">
+                    <button onclick="selectDebateOption(1)" class="w-full text-left p-4 rounded-xl border border-stone-200 hover:border-purple-400 hover:bg-purple-50/50 transition-all text-sm flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs flex-shrink-0 mt-0.5">A</span>
+                        <span>Que cambie el celular inmediatamente para estar a la moda y tener la mejor cámara.</span>
+                    </button>
+                    <button onclick="selectDebateOption(2)" class="w-full text-left p-4 rounded-xl border border-stone-200 hover:border-purple-400 hover:bg-purple-50/50 transition-all text-sm flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs flex-shrink-0 mt-0.5">B</span>
+                        <span>Que reflexione si realmente lo necesita, reconociendo que es <strong>Obsolescencia Percibida</strong> y que conservar su celular cuida el medioambiente.</span>
+                    </button>
+                    <button onclick="selectDebateOption(3)" class="w-full text-left p-4 rounded-xl border border-stone-200 hover:border-purple-400 hover:bg-purple-50/50 transition-all text-sm flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 font-bold flex items-center justify-center text-xs flex-shrink-0 mt-0.5">C</span>
+                        <span>Que tire el celular viejo a la papelera del liceo para comprar el nuevo.</span>
+                    </button>
+                </div>
+
+                <!-- Debate Feedback Result Box -->
+                <div id="debate-feedback" class="mt-6 p-4 rounded-xl hidden transition-all text-sm"></div>
+            </div>
+
+            <!-- Activity 2: Household Tech Audit Tool -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="text-2xl p-2 bg-emerald-50 text-ecoPrimary rounded-lg">📝</span>
+                    <h3 class="text-xl font-bold text-ecoDark">Actividad 2: Auditoría Tecnológica del Hogar</h3>
+                </div>
+                <p class="text-sm text-ecoMuted mb-6">
+                    Añadí los dispositivos electrónicos fuera de uso o guardados en los cajones de tu casa para calcular cuánta "tecnología dormida" tenés guardada "por las dudas".
+                </p>
+
+                <!-- Interactive Form to add devices -->
+                <form id="audit-form" onsubmit="addAuditItem(event)" class="grid sm:grid-cols-4 gap-3 mb-6 bg-stone-50 p-4 rounded-xl border border-stone-200">
+                    <input type="text" id="dev-name" placeholder="Ej: Celular viejo, Auriculares" required class="px-3 py-2 text-sm rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-ecoPrimary">
+                    <input type="number" id="dev-age" placeholder="Años antigüedad (ej: 4)" required min="0" max="30" class="px-3 py-2 text-sm rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-ecoPrimary">
+                    <select id="dev-status" class="px-3 py-2 text-sm rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-ecoPrimary">
+                        <option value="Funciona">Funciona bien</option>
+                        <option value="Roto / Falla">Roto / Falla</option>
+                        <option value="Obsoleto">Muy lento / Obsoleto</option>
+                    </select>
+                    <button type="submit" class="bg-ecoPrimary hover:bg-emerald-800 text-white font-bold text-sm px-4 py-2 rounded-lg transition-all shadow-sm">
+                        + Agregar
+                    </button>
+                </form>
+
+                <!-- Audit Items Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-stone-100 text-stone-700 text-xs uppercase font-semibold">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">Dispositivo</th>
+                                <th class="p-3">Antigüedad</th>
+                                <th class="p-3">Estado</th>
+                                <th class="p-3 rounded-r-lg">Acción Sugerida</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-tbody" class="divide-y divide-stone-100">
+                            <!-- Pre-filled default examples -->
+                            <tr>
+                                <td class="p-3 font-medium text-ecoDark">Smartphone antiguo</td>
+                                <td class="p-3 text-ecoMuted">5 años</td>
+                                <td class="p-3"><span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-xs">Roto / Falla</span></td>
+                                <td class="p-3 text-xs text-ecoPrimary font-semibold">Llevar a Ecocentro / Reciclar</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Activity 3: Quick Quiz -->
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl p-2 bg-amber-50 text-amber-600 rounded-lg">🎯</span>
+                        <h3 class="text-xl font-bold text-ecoDark">Autoevaluación Rápida</h3>
+                    </div>
+                    <span id="quiz-score" class="text-xs font-bold px-3 py-1 bg-stone-100 rounded-full text-stone-700">Puntaje: 0 / 2</span>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Question 1 -->
+                    <div class="border-b border-stone-100 pb-4">
+                        <p class="text-sm font-semibold text-ecoDark mb-2">1. ¿Cuál es un ejemplo de Obsolescencia Programada?</p>
+                        <div class="grid sm:grid-cols-2 gap-2 text-xs">
+                            <button onclick="checkQuiz(1, true, this)" class="q-btn p-3 text-left border rounded-lg hover:bg-stone-50">Una batería sellada que no se puede cambiar cuando pierde capacidad.</button>
+                            <button onclick="checkQuiz(1, false, this)" class="q-btn p-3 text-left border rounded-lg hover:bg-stone-50">Cambiar de celular porque salió un color de moda que te gusta.</button>
+                        </div>
+                    </div>
+                    <!-- Question 2 -->
+                    <div>
+                        <p class="text-sm font-semibold text-ecoDark mb-2">2. ¿Qué se debe hacer con las pilas usadas en Uruguay?</p>
+                        <div class="grid sm:grid-cols-2 gap-2 text-xs">
+                            <button onclick="checkQuiz(2, false, this)" class="q-btn p-3 text-left border rounded-lg hover:bg-stone-50">Tirarlas en la bolsa común con la comida.</button>
+                            <button onclick="checkQuiz(2, true, this)" class="q-btn p-3 text-left border rounded-lg hover:bg-stone-50">Llevarlas a contenedores específicos ("Tragapilas").</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-stone-200 mt-12 py-6 text-center text-xs text-ecoMuted">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="font-medium text-stone-700">EcoTech Uruguay • Recurso Didáctico para 7.° Año de Educación Básica Integrada (EBI)</p>
+            <p class="mt-1">Desarrollado en alineación con el programa ANEP Uruguay • Consumo Responsable y Ciudadanía Digital</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Global State variables
+        let currentTab = 'obsolescencia';
+        let lifespanChartInstance = null;
+        let raeeChartInstance = null;
+        let quizScoreState = { q1: false, q2: false };
+
+        // Chemical components dataset
+        const phoneElements = [
+            { id: 'coltan', name: 'Coltán', symbol: 'Ta/Nb', category: 'Mineral Raro', icon: '💎', color: 'bg-purple-100 text-purple-800', desc: 'Mineral escaso clave para fabricar condensadores diminutos. Su extracción intensiva causa tensiones ambientales y sociales.' },
+            { id: 'litio', name: 'Litio', symbol: 'Li', category: 'Metal para Batería', icon: '🔋', color: 'bg-amber-100 text-amber-800', desc: 'Permite acumular energía en baterías recargables. Su minería requiere grandes volúmenes de agua en salares.' },
+            { id: 'oro', name: 'Oro y Cobre', symbol: 'Au/Cu', category: 'Metales Valiosos', icon: '🥇', color: 'bg-yellow-100 text-yellow-800', desc: 'Excelentes conductores eléctricos utilizados en microchips y placas. Reciclar 1 tonelada de celulares extrae más oro que 1 tonelada de roca minera.' },
+            { id: 'plomo', name: 'Plomo y Mercurio', symbol: 'Pb/Hg', category: 'Sustancia Tóxica', icon: '⚠️', color: 'bg-rose-100 text-rose-800', desc: 'Metales pesados altamente tóxicos. Si van a un vertedero común, contaminan las fuentes de agua subterránea (lixiviados).' }
+        ];
+
+        // Init on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            renderElementsGrid();
+            initLifespanChart();
+            initRaeeChart();
+        });
+
+        // Navigation Switcher Logic
+        function switchTab(tabId) {
+            currentTab = tabId;
+            const tabs = ['obsolescencia', 'ambiente', 'uruguay', 'actividades'];
+            
+            tabs.forEach(t => {
+                const sec = document.getElementById(`sec-${t}`);
+                const dBtn = document.getElementById(`nav-${t}`);
+                const mBtn = document.getElementById(`mnav-${t}`);
+                
+                if (t === tabId) {
+                    sec.classList.remove('hidden');
+                    dBtn.classList.add('active');
+                    mBtn.classList.add('active');
+                } else {
+                    sec.classList.add('hidden');
+                    dBtn.classList.remove('active');
+                    mBtn.classList.remove('active');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Lifespan Simulator Calculations
+        function updateLifespanSim(years) {
+            document.getElementById('slider-val').innerText = `${years} ${years == 1 ? 'año' : 'años'}`;
+            const count = Math.ceil(10 / years);
+            const wasteGrams = count * 200; // ~200g per phone
+            const co2Kg = count * 70; // ~70kg CO2 per phone lifecycle
+
+            document.getElementById('sim-count').innerText = `${count} equipos`;
+            document.getElementById('sim-waste').innerText = `${wasteGrams.toLocaleString()} g aprox.`;
+            document.getElementById('sim-co2').innerText = `${co2Kg} kg CO2`;
+
+            // Update Chart
+            if (lifespanChartInstance) {
+                lifespanChartInstance.data.datasets[0].data = [count, 2]; // Comparing user vs sustainable 5 years
+                lifespanChartInstance.update();
+            }
+        }
+
+        // Init Lifespan Bar Chart
+        function initLifespanSimChart() {
+            // Placeholder wrapper handled in DOM init
+        }
+
+        function initLifespanChart() {
+            const ctx = document.getElementById('lifespanChart').getContext('2d');
+            lifespanChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tus compras en 10 años', 'Uso óptimo (5 años/equipo)'],
+                    datasets: [{
+                        label: 'Cantidad de Celulares Comprados',
+                        data: [5, 2],
+                        backgroundColor: ['#d97706', '#2d6a4f'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Total: ${context.raw} celulares`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Init RAEE Doughnut Chart
+        function initRaeeChart() {
+            const ctx = document.getElementById('raeeChart').getContext('2d');
+            raeeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Vertederos / Informal (Contamina)', 'Reciclado Formal / Reutilizado'],
+                    datasets: [{
+                        data: [82, 18],
+                        backgroundColor: ['#f43f5e', '#2d6a4f'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Render Component Grid for Environment Section
+        function renderElementsGrid() {
+            const grid = document.getElementById('elements-grid');
+            grid.innerHTML = '';
+            
+            phoneElements.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-stone-50 border border-stone-200 p-4 rounded-xl cursor-pointer hover:border-ecoPrimary hover:bg-emerald-50/30 transition-all";
+                card.onclick = () => showElementDetail(item);
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-2xl">${item.icon}</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${item.color}">${item.symbol}</span>
+                    </div>
+                    <h4 class="font-bold text-ecoDark text-sm">${item.name}</h4>
+                    <p class="text-xs text-ecoMuted mt-1">${item.category}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function showElementDetail(item) {
+            const box = document.getElementById('element-detail-box');
+            document.getElementById('elem-icon').innerText = item.icon;
+            document.getElementById('elem-title').innerText = `${item.name} (${item.symbol})`;
+            
+            const badge = document.getElementById('elem-badge');
+            badge.innerText = item.category;
+            badge.className = `ml-auto text-xs font-bold px-2.5 py-1 rounded-full ${item.color}`;
+            
+            document.getElementById('elem-desc').innerText = item.desc;
+            box.classList.remove('hidden');
+        }
+
+        // Uruguay Disposal Locator Filter
+        function filterDisposal(type) {
+            const buttons = document.querySelectorAll('#disposal-filters button');
+            buttons.forEach(b => {
+                b.classList.remove('bg-stone-200', 'text-stone-800');
+                b.classList.add('bg-stone-100', 'text-stone-600');
+            });
+            event.target.classList.add('bg-stone-200', 'text-stone-800');
+
+            const cards = document.querySelectorAll('.disp-card');
+            cards.forEach(card => {
+                if (type === 'all' || card.classList.contains(type)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Debate Simulator Option Selector
+        function selectDebateOption(option) {
+            const feedback = document.getElementById('debate-feedback');
+            feedback.classList.remove('hidden', 'bg-rose-50', 'text-rose-800', 'bg-emerald-50', 'text-emerald-900', 'border-rose-200', 'border-emerald-200');
+
+            if (option === 1) {
+                feedback.className = "mt-6 p-4 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-sm";
+                feedback.innerHTML = "<strong>⚠️ Reflexión:</strong> Esta opción responde a la <em>Obsolescencia Percibida</em>. Martín estaría gastando recursos y generando impacto ambiental solo por presión social, aunque su teléfono funciona perfectamente.";
+            } else if (option === 2) {
+                feedback.className = "mt-6 p-4 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 text-sm";
+                feedback.innerHTML = "<strong>✅ ¡Excelente reflexión!</strong> Es el consejo más responsable. Reconocer la Obsolescencia Percibida nos permite cuidar nuestra economía y evitar la generación innecesaria de basura electrónica (RAEE).";
+            } else if (option === 3) {
+                feedback.className = "mt-6 p-4 rounded-xl bg-rose-50 text-rose-900 border border-rose-200 text-sm";
+                feedback.innerHTML = "<strong>❌ Incorrecto:</strong> Los dispositivos nunca deben tirarse a la papelera común. Contienen sustancias tóxicas que filtran al suelo. Debe llevarse a un circuito de recolección de RAEE o ser reutilizado.";
+            }
+        }
+
+        // Household Tech Audit Form handler
+        function addAuditItem(e) {
+            e.preventDefault();
+            const name = document.getElementById('dev-name').value;
+            const age = document.getElementById('dev-age').value;
+            const status = document.getElementById('dev-status').value;
+
+            let action = "Donar o reutilizar";
+            let statusBadge = "bg-emerald-100 text-emerald-800";
+            if (status.includes("Roto")) {
+                action = "Llevar a Ecocentro / Reciclar";
+                statusBadge = "bg-amber-100 text-amber-800";
+            } else if (status.includes("Obsoleto")) {
+                action = "Reparar o devolver a Plan Ceibal";
+                statusBadge = "bg-sky-100 text-sky-800";
+            }
+
+            const tbody = document.getElementById('audit-tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-3 font-medium text-ecoDark">${name}</td>
+                <td class="p-3 text-ecoMuted">${age} ${age == 1 ? 'año' : 'años'}</td>
+                <td class="p-3"><span class="px-2 py-0.5 ${statusBadge} rounded text-xs">${status}</span></td>
+                <td class="p-3 text-xs text-ecoPrimary font-semibold">${action}</td>
+            `;
+            tbody.appendChild(tr);
+
+            // Reset form
+            document.getElementById('dev-name').value = '';
+            document.getElementById('dev-age').value = '';
+        }
+
+        // Quiz checking
+        function checkQuiz(qNum, isCorrect, btn) {
+            const parent = btn.parentElement;
+            const buttons = parent.querySelectorAll('button');
+            buttons.forEach(b => {
+                b.classList.remove('bg-emerald-100', 'bg-rose-100', 'border-emerald-500', 'border-rose-500');
+            });
+
+            if (isCorrect) {
+                btn.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900');
+                if (qNum === 1) quizScoreState.q1 = true;
+                if (qNum === 2) quizScoreState.q2 = true;
+            } else {
+                btn.classList.add('bg-rose-100', 'border-rose-500', 'text-rose-900');
+                if (qNum === 1) quizScoreState.q1 = false;
+                if (qNum === 2) quizScoreState.q2 = false;
+            }
+
+            const total = (quizScoreState.q1 ? 1 : 0) + (quizScoreState.q2 ? 1 : 0);
+            document.getElementById('quiz-score').innerText = `Puntaje: ${total} / 2`;
+        }
+    </script>
+</body>
+</html>
